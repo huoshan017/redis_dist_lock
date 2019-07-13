@@ -44,13 +44,14 @@ func (this *RedisClusterDistLock) TryLock(rand_str string) (bool, error) {
 		return false, c.Err()
 	}
 	if !c.Val() {
-		bc := this.cluster.Eval(check_pttl_delete_script, []string{this.key}, rand_str, this.expiration)
+		/*bc := this.cluster.Eval(check_pttl_delete_script, []string{this.key}, rand_str, this.expiration)
 		if bc.Err() != nil {
 			return false, c.Err()
 		}
-		if bc.Val().(string) == "" {
+		if bc.Val().(string) != "OK" {
 			return false, nil
-		}
+		}*/
+		return false, nil
 	}
 	return true, nil
 }
