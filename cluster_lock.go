@@ -27,16 +27,6 @@ func NewRedisClusterDistLock(addrs []string, key string, expiration time.Duratio
 	}
 }
 
-var check_pttl_delete_script = `
-	if redis.call("GET", KEYS[1]) ~= "" then
-		if redis.call("PTTL", KEYS[1]) <= 0 then
-			redis.call("EXPIRE", KEYS[1], ARGV[2])
-			return redis.call("SET", KEYS[1], ARGV[1])
-		end
-	end
-	return ""
-`
-
 func (this *RedisClusterDistLock) TryLock(rand_str string) (bool, error) {
 	c := this.cluster.SetNX(this.key, rand_str, this.expiration)
 	if c.Err() != nil {
@@ -44,13 +34,6 @@ func (this *RedisClusterDistLock) TryLock(rand_str string) (bool, error) {
 		return false, c.Err()
 	}
 	if !c.Val() {
-		/*bc := this.cluster.Eval(check_pttl_delete_script, []string{this.key}, rand_str, this.expiration)
-		if bc.Err() != nil {
-			return false, c.Err()
-		}
-		if bc.Val().(string) != "OK" {
-			return false, nil
-		}*/
 		return false, nil
 	}
 	return true, nil
